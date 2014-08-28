@@ -13,6 +13,7 @@
 #include "hardware_legacy/driver_nl80211.h"
 #include "wpa_supplicant_i.h"
 #include "config.h"
+#include <cutils/properties.h>
 #ifdef ANDROID
 #include "android_drv.h"
 #endif
@@ -132,7 +133,11 @@ static int wpa_driver_set_backgroundscan_params(void *priv)
 	android_wifi_priv_cmd priv_cmd;
 	int ret = 0, i = 0, bp;
 	char buf[WEXT_PNO_MAX_COMMAND_SIZE];
+	char wfmodule[PROPERTY_VALUE_MAX];
 	struct wpa_ssid *ssid_conf;
+
+	memset(wfmodule, 0, sizeof(wfmodule));
+	property_get("ro.hardkernel.wifi2", wfmodule, "0");
 
 	if (drv == NULL) {
 		wpa_printf(MSG_ERROR, "%s: drv is NULL. Exiting", __func__);
@@ -192,6 +197,10 @@ static int wpa_driver_set_backgroundscan_params(void *priv)
 	priv_cmd.total_len = bp;
 	ifr.ifr_data = &priv_cmd;
 
+	if (!strcmp("true", wfmodule)) {
+	drv_errors = 0;
+	return 0;
+	} else {
 	ret = ioctl(drv->global->ioctl_sock, SIOCDEVPRIVATE + 1, &ifr);
 
 	if (ret < 0) {
@@ -201,6 +210,7 @@ static int wpa_driver_set_backgroundscan_params(void *priv)
 		drv_errors = 0;
 	}
 	return ret;
+	}
 }
 
 int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf,
@@ -211,6 +221,10 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf,
 	struct ifreq ifr;
 	android_wifi_priv_cmd priv_cmd;
 	int ret = 0;
+	char wfmodule[PROPERTY_VALUE_MAX];
+
+	memset(wfmodule, 0, sizeof(wfmodule));
+	property_get("ro.hardkernel.wifi2", wfmodule, "0");
 
 	if (os_strcasecmp(cmd, "STOP") == 0) {
 		linux_set_iface_flags(drv->global->ioctl_sock, bss->ifname, 0);
@@ -247,6 +261,9 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf,
 			wpa_driver_send_hang_msg(drv);
 		}
 	} else { /* Use private command */
+		if (!strcmp("true", wfmodule)) {
+		return 0;
+		} else {
 		if (os_strcasecmp(cmd, "BGSCAN-START") == 0) {
 			ret = wpa_driver_set_backgroundscan_params(priv);
 			if (ret < 0) {
@@ -283,6 +300,7 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf,
 				wpa_supplicant_event(drv->ctx,
 					EVENT_CHANNEL_LIST_CHANGED, NULL);
 			wpa_printf(MSG_DEBUG, "%s %s len = %d, %d", __func__, buf, ret, strlen(buf));
+		}
 		}
 	}
 	return ret;
