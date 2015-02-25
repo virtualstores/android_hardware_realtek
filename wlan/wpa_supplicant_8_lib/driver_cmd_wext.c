@@ -34,8 +34,8 @@
 #include "android_drv.h"
 #endif /* ANDROID */
 
-#define RSSI_CMD        "RSSI"
-#define LINKSPEED_CMD   "LINKSPEED"
+#define RSSI_CMD			"RSSI"
+#define LINKSPEED_CMD			"LINKSPEED"
 
 /**
  * wpa_driver_wext_set_scan_timeout - Set scan timeout to report scan completion
@@ -335,9 +335,6 @@ int wpa_driver_wext_driver_cmd( void *priv, char *cmd, char *buf, size_t buf_len
 	}
 
 	ret = ioctl(drv->ioctl_sock, SIOCSIWPRIV, &iwr);
-	
-	// USB Dongle Used
-	//ret = 0;
 
 	if (ret < 0) {
 		wpa_printf(MSG_ERROR, "%s failed (%d): %s", __func__, ret, cmd);
