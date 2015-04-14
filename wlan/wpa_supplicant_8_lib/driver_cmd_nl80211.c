@@ -48,7 +48,7 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf,
 	char wfmodule[PROPERTY_VALUE_MAX];
 
 	memset(wfmodule, 0, sizeof(wfmodule));
-	property_get("ro.hardkernel.wifi2", wfmodule, "0");
+	property_get("wlan.modname", wfmodule, "0");
 
 	if (os_strcasecmp(cmd, "STOP") == 0) {
 		linux_set_iface_flags(drv->global->ioctl_sock, bss->ifname, 0);
@@ -64,7 +64,7 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf,
 			ret = os_snprintf(buf, buf_len,
 					  "Macaddr = " MACSTR "\n", MAC2STR(macaddr));
 	} else { /* Use private command */
-		if (!strcmp("true", wfmodule)) {
+		if (!strcmp("rt2800usb", wfmodule)) {
 		return 0;
 		} else {
 		os_memcpy(buf, cmd, strlen(cmd) + 1);
